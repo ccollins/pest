@@ -31,24 +31,6 @@ class Pest(object):
                     self.snapshot[f] = last_update
         return changes
 
-    def timer_callback(self, timer, stream):
-        FSEventStreamFlushAsync(stream)
-    
-    def fsevents_callback(self, stream, clientInfo, numEvents, eventPaths, eventMasks, eventIDs):
-        self.run()
-    
-    def createStream(self, full_path):
-        stream = FSEventStreamCreate(kCFAllocatorDefault,            # allocator 
-                                      self.fsevents_callback,             # callback  
-                                      full_path,                     # path      
-                                      [full_path],                   # path
-                                      kFSEventStreamEventIdSinceNow, # since_when
-                                      1.0,                           # latency   
-                                      0)                             # flags     
-
-        assert stream, "ERROR: FSEVentStreamCreate() => NULL"
-        return stream
-
     def run_loop(self, stream):
         FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)
         assert FSEventStreamStart(stream), "Failed to start stream"
@@ -57,7 +39,7 @@ class Pest(object):
                                     1.0, 
                                     0, 
                                     0, 
-                                    self.timer_callback,
+                                    lambda timer, stream: FSEventStreamFlushAsync(stream),
                                     stream)
         CFRunLoopAddTimer(CFRunLoopGetCurrent(), timer, kCFRunLoopDefaultMode)
         try:
@@ -69,7 +51,16 @@ class Pest(object):
     
     def start(self):
         abspath = os.path.join(os.path.abspath(os.curdir), self.target)
-        self.run_loop(self.createStream(abspath))
+        stream = FSEventStreamCreate(kCFAllocatorDefault,            # allocator 
+                                      lambda *x: self.run(),         # callback  
+                                      abspath,                     # path      
+                                      [abspath],                   # path
+                                      kFSEventStreamEventIdSinceNow, # since_when
+                                      1.0,                           # latency   
+                                      0)                             # flags     
+        assert stream, "ERROR: FSEVentStreamCreate() => NULL"
+        
+        self.run_loop(stream)
     
 def main():
     pest = Pest()
