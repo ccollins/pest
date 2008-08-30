@@ -3,10 +3,14 @@ import objc
 import os, sys
 
 class Pest(object):
-    def __init__(self):
+    def __init__(self, force_initial_run=True):
         self.snapshot = {}
         self.target = os.path.abspath(os.curdir)
         self.callback = lambda x: x
+        if force_initial_run:
+            self._default_time = lambda f: 0
+        else:
+            self._default_time = os.path.getmtime
 
     def run(self):
         changes = self._check_changes()
@@ -25,11 +29,12 @@ class Pest(object):
             for name in files:
                 f = os.path.join(root, name)
                 last_update = os.path.getmtime(f)
-                last_known = self.snapshot.setdefault(f, last_update)
+                last_known = self.snapshot.setdefault(f, self._default_time(f))
                 if last_update != last_known:
                     changes.append(f)
                     self.snapshot[f] = last_update
         return changes
+
 
     def start(self):
         abspath = os.path.join(os.path.abspath(os.curdir), self.target)
@@ -41,7 +46,6 @@ class Pest(object):
                                       1.0,                           # latency   
                                       0)                             # flags     
         assert stream, "ERROR: FSEVentStreamCreate() => NULL"
-        self.run()
         self.run()
         self._run_loop(stream)
     
