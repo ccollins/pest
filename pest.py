@@ -31,7 +31,21 @@ class Pest(object):
                     self.snapshot[f] = last_update
         return changes
 
-    def run_loop(self, stream):
+    def start(self):
+        abspath = os.path.join(os.path.abspath(os.curdir), self.target)
+        stream = FSEventStreamCreate(kCFAllocatorDefault,            # allocator 
+                                      lambda *x: self.run(),         # callback  
+                                      abspath,                       # path
+                                      [abspath],                     # path
+                                      kFSEventStreamEventIdSinceNow, # since_when
+                                      1.0,                           # latency   
+                                      0)                             # flags     
+        assert stream, "ERROR: FSEVentStreamCreate() => NULL"
+        self.run()
+        self.run()
+        self._run_loop(stream)
+    
+    def _run_loop(self, stream):
         FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)
         assert FSEventStreamStart(stream), "Failed to start stream"
         timer = CFRunLoopTimerCreate(kCFAllocatorDefault, 
@@ -48,19 +62,6 @@ class Pest(object):
             FSEventStreamStop(stream)
             FSEventStreamInvalidate(stream)
             FSEventStreamRelease(stream)
-    
-    def start(self):
-        abspath = os.path.join(os.path.abspath(os.curdir), self.target)
-        stream = FSEventStreamCreate(kCFAllocatorDefault,            # allocator 
-                                      lambda *x: self.run(),         # callback  
-                                      abspath,                     # path      
-                                      [abspath],                   # path
-                                      kFSEventStreamEventIdSinceNow, # since_when
-                                      1.0,                           # latency   
-                                      0)                             # flags     
-        assert stream, "ERROR: FSEVentStreamCreate() => NULL"
-        
-        self.run_loop(stream)
     
 def main():
     pest = Pest()
