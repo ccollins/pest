@@ -17,15 +17,11 @@ class Pest(object):
         if changes:
             self.callback(changes)
 
-    def _remove_from(self, l, items):
-        for i in items:
-            l.remove(i)
-
     def _check_changes(self):
         changes = []
         for root, dirs, files in os.walk(self.target):
-            self._remove_from(dirs, [d for d in dirs if d.startswith('.')])
-            self._remove_from(files, [f for f in files if not f.endswith('.py')])
+            map(dirs.remove, [d for d in dirs if d.startswith('.')])
+            map(files.remove, [f for f in files if not f.endswith('.py')])
             for name in files:
                 f = os.path.join(root, name)
                 last_update = os.path.getmtime(f)
