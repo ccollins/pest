@@ -19,16 +19,22 @@ class Pest(object):
 
     def _check_changes(self, default_time):
         changes = []
+        current_files = []
         for root, dirs, files in os.walk(self.target):
             map(dirs.remove, [d for d in dirs if d.startswith('.')])
             map(files.remove, [f for f in files if not f.endswith('.py')])
             for name in files:
                 f = os.path.join(root, name)
+                current_files.append(f)
                 last_update = os.path.getmtime(f)
                 last_known = self.snapshot.setdefault(f, default_time(f))
                 if last_update != last_known:
                     changes.append(f)
                     self.snapshot[f] = last_update
+        for k in self.snapshot.iterkeys():
+            if k not in current_files:
+                changes.append(k)
+                del self.snapshot[k]
         return changes
 
 
