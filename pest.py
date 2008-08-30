@@ -3,11 +3,12 @@ import objc
 import os, sys
 
 class Pest(object):
-    def __init__(self, force_initial_run=True):
+    def __init__(self, force_initial_run=True, target=None,
+                callback=lambda x: x, exclude=lambda x: False):
         self.snapshot = {}
-        self.target = os.path.abspath(os.curdir)
-        self.callback = lambda x: x
-        self.exclude = lambda x: False
+        self.target = target or os.path.abspath(os.curdir)
+        self.callback = callback
+        self.exclude = exclude
         if force_initial_run:
             self._first_run_time = lambda f: 0
         else:
@@ -32,7 +33,7 @@ class Pest(object):
                 if last_update != last_known:
                     changes.append(f)
                     self.snapshot[f] = last_update
-        for k in self.snapshot.iterkeys():
+        for k in self.snapshot.keys():
             if k not in current_files:
                 changes.append(k)
                 del self.snapshot[k]
@@ -71,16 +72,11 @@ class Pest(object):
             FSEventStreamRelease(stream)
     
 def main():
-    pest = Pest()
     def exclude(name):
         return name.startswith('.') or not name.endswith('.py')
     def dump(changes): 
         print changes
-
-    pest.target = sys.argv[1]
-    pest.exclude = exclude
-    pest.callback = dump
-    pest.start()
+    Pest(exclude=exclude,callback=dump).start()
 
 if __name__ == '__main__':
     main()
