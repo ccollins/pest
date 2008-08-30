@@ -7,6 +7,7 @@ class Pest(object):
         self.snapshot = {}
         self.target = os.path.abspath(os.curdir)
         self.callback = lambda x: x
+        self.exclude = lambda x: False
         if force_initial_run:
             self._first_run_time = lambda f: 0
         else:
@@ -21,8 +22,8 @@ class Pest(object):
         changes = []
         current_files = []
         for root, dirs, files in os.walk(self.target):
-            map(dirs.remove, [d for d in dirs if d.startswith('.')])
-            map(files.remove, [f for f in files if not f.endswith('.py')])
+            map(dirs.remove, [d for d in dirs if self.exclude(d)])
+            map(files.remove, [f for f in files if self.exclude(f)])
             for name in files:
                 f = os.path.join(root, name)
                 current_files.append(f)
@@ -71,8 +72,13 @@ class Pest(object):
     
 def main():
     pest = Pest()
-    def dump(changes): print changes
+    def exclude(name):
+        return name.startswith('.') or not name.endswith('.py')
+    def dump(changes): 
+        print changes
+
     pest.target = sys.argv[1]
+    pest.exclude = exclude
     pest.callback = dump
     pest.start()
 
