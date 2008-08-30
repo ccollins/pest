@@ -8,16 +8,16 @@ class Pest(object):
         self.target = os.path.abspath(os.curdir)
         self.callback = lambda x: x
         if force_initial_run:
-            self._default_time = lambda f: 0
+            self._first_run_time = lambda f: 0
         else:
-            self._default_time = os.path.getmtime
+            self._first_run_time = os.path.getmtime
 
-    def run(self):
-        changes = self._check_changes()
+    def run(self, default_time):
+        changes = self._check_changes(default_time)
         if changes:
             self.callback(changes)
 
-    def _check_changes(self):
+    def _check_changes(self, default_time):
         changes = []
         for root, dirs, files in os.walk(self.target):
             map(dirs.remove, [d for d in dirs if d.startswith('.')])
@@ -25,7 +25,7 @@ class Pest(object):
             for name in files:
                 f = os.path.join(root, name)
                 last_update = os.path.getmtime(f)
-                last_known = self.snapshot.setdefault(f, self._default_time(f))
+                last_known = self.snapshot.setdefault(f, default_time(f))
                 if last_update != last_known:
                     changes.append(f)
                     self.snapshot[f] = last_update
@@ -34,15 +34,15 @@ class Pest(object):
 
     def start(self):
         abspath = os.path.join(os.path.abspath(os.curdir), self.target)
-        stream = FSEventStreamCreate(kCFAllocatorDefault,            # allocator 
-                                      lambda *x: self.run(),         # callback  
-                                      abspath,                       # path
-                                      [abspath],                     # path
-                                      kFSEventStreamEventIdSinceNow, # since_when
-                                      1.0,                           # latency   
-                                      0)                             # flags     
+        stream = FSEventStreamCreate(kCFAllocatorDefault,               # allocator 
+                                      lambda *x: self.run(lambda f: 0), # callback  
+                                      abspath,                          # path
+                                      [abspath],                        # path
+                                      kFSEventStreamEventIdSinceNow,    # since_when
+                                      1.0,                              # latency   
+                                      0)                                # flags     
         assert stream, "ERROR: FSEVentStreamCreate() => NULL"
-        self.run()
+        self.run(self._first_run_time)
         self._run_loop(stream)
     
     def _run_loop(self, stream):
