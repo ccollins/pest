@@ -1,0 +1,6 @@
+To install djpest.py into your path run:
+python setup.py develop 
+
+This will only create links so that when you can keep everything in sync with the github.
+
+Run djpest.py from with a django project directory and it will run ./manage.py test when a .py file changes

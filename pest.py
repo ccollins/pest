@@ -4,11 +4,15 @@ import os, sys
 
 class Pest(object):
     def __init__(self, force_initial_run=True, target=None,
-                callback=lambda x: x, exclude=lambda x: False):
+                callback=lambda x: x, exclude_dir=lambda x: False, 
+                exclude_file=lambda x: False):
         self.snapshot = {}
-        self.target = target or os.path.abspath(os.curdir)
+        self.target = os.path.abspath(os.curdir)
+        if target:
+            self.target = os.path.join(self.target, target)
         self.callback = callback
-        self.exclude = exclude
+        self.exclude_dir = exclude_dir
+        self.exclude_file = exclude_file
         if force_initial_run:
             self._first_run_time = lambda f: 0
         else:
@@ -23,8 +27,8 @@ class Pest(object):
         changes = []
         current_files = []
         for root, dirs, files in os.walk(self.target):
-            map(dirs.remove, [d for d in dirs if self.exclude(d)])
-            map(files.remove, [f for f in files if self.exclude(f)])
+            map(dirs.remove, [d for d in dirs if self.exclude_dir(d)])
+            map(files.remove, [f for f in files if self.exclude_file(f)])
             for name in files:
                 f = os.path.join(root, name)
                 current_files.append(f)
@@ -41,11 +45,10 @@ class Pest(object):
 
 
     def start(self):
-        abspath = os.path.join(os.path.abspath(os.curdir), self.target)
         stream = FSEventStreamCreate(kCFAllocatorDefault,               # allocator 
                                       lambda *x: self.run(lambda f: 0), # callback  
-                                      abspath,                          # path
-                                      [abspath],                        # path
+                                      self.target,                      # path
+                                      [self.target],                    # path
                                       kFSEventStreamEventIdSinceNow,    # since_when
                                       1.0,                              # latency   
                                       0)                                # flags     
@@ -70,13 +73,15 @@ class Pest(object):
             FSEventStreamStop(stream)
             FSEventStreamInvalidate(stream)
             FSEventStreamRelease(stream)
-    
+
 def main():
-    def exclude(name):
-        return name.startswith('.') or not name.endswith('.py')
+    def exclude_dir(name):
+        return name.startswith('.') 
+    def exclude_file(name):
+        return not name.endswith('.py')
     def dump(changes): 
         print changes
-    Pest(exclude=exclude,callback=dump).start()
+    Pest(exclude_dir=exclude_dir, exclude_file=exclude_file,callback=dump).start()
 
 if __name__ == '__main__':
     main()
