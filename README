@@ -1,0 +1,3 @@
+Pip dev installation:
+pip install -E pest -e git://github.com/ccollins/pest.git#egg=Pest
+pip install -E pest -r pest/src/pest/requirements.txt
