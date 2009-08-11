@@ -1,1 +1,2 @@
 pyobjc-framework-FSEvents
+-e git://github.com/ccollins/growl-py.git#egg=growl-py
