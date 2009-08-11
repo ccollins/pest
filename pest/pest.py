@@ -2,6 +2,32 @@ from FSEvents import *
 import objc
 import os, sys
 
+PASS = "PASS"
+FAIL = "FAIL"
+PENDING = "PENDING"
+
+def watch(stream):
+    FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)
+    assert FSEventStreamStart(stream), "Failed to start stream"
+    timer = CFRunLoopTimerCreate(kCFAllocatorDefault, CFAbsoluteTimeGetCurrent() + 1.0, 1.0, 0, 
+                                 0, lambda timer, stream: FSEventStreamFlushAsync(stream), stream)
+    CFRunLoopAddTimer(CFRunLoopGetCurrent(), timer, kCFRunLoopDefaultMode)
+    try:
+        CFRunLoopRun()
+    finally:
+        FSEventStreamStop(stream)
+        FSEventStreamInvalidate(stream)
+        FSEventStreamRelease(stream)
+
+def notify(growl, results):
+    if growl:
+        if results == 0:
+            growl.notify(noteType=PASS, title="Tests Passed", description="All tests passed!", 
+                         icon=growl.imageFromPath(os.path.join(os.path.dirname(pest.__file__), "etc/images/pass.png")))
+        else:
+            growl.notify(noteType=FAIL, title="Tests Failed", description="FAIL!!!",
+                         icon=growl.imageFromPath(os.path.join(os.path.dirname(pest.__file__), "etc/images/fail.png")))
+            
 class Pest(object):
     def __init__(self, force_initial_run=True, target=None,
                 callback=lambda x: x, exclude_dir=lambda x: False, 
@@ -54,26 +80,8 @@ class Pest(object):
                                       0)                                # flags     
         assert stream, "ERROR: FSEVentStreamCreate() => NULL"
         self.run(self._first_run_time)
-        self._run_loop(stream)
-    
-    def _run_loop(self, stream):
-        FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)
-        assert FSEventStreamStart(stream), "Failed to start stream"
-        timer = CFRunLoopTimerCreate(kCFAllocatorDefault, 
-                                    CFAbsoluteTimeGetCurrent() + 1.0, 
-                                    1.0, 
-                                    0, 
-                                    0, 
-                                    lambda timer, stream: FSEventStreamFlushAsync(stream),
-                                    stream)
-        CFRunLoopAddTimer(CFRunLoopGetCurrent(), timer, kCFRunLoopDefaultMode)
-        try:
-            CFRunLoopRun()
-        finally:
-            FSEventStreamStop(stream)
-            FSEventStreamInvalidate(stream)
-            FSEventStreamRelease(stream)
-
+        watch(stream)
+            
 def main():
     def exclude_dir(name):
         return name.startswith('.') 
