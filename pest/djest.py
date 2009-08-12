@@ -1,5 +1,5 @@
 import os, sys
-from pest import pest
+import pest
 
 class Djest(pest.Pest):
     def __init__(self):
@@ -13,6 +13,3 @@ class Djest(pest.Pest):
 
     def run_tests(self, changes): 
         pest.notify(self.gn, os.system('./manage.py test'))
-
-if __name__ == '__main__':
-    Djest().start()
