@@ -1,6 +1,7 @@
 from FSEvents import *
 import objc
 import os, sys
+from Growl import Image, GrowlNotifier
 
 PASS = "PASS"
 FAIL = "FAIL"
@@ -23,31 +24,34 @@ def notify(growl, results):
     if growl:
         if results == 0:
             growl.notify(noteType=PASS, title="Tests Passed", description="All tests passed!", 
-                         icon=growl.imageFromPath(os.path.join(os.path.dirname(pest.__file__), "etc/images/pass.png")))
+                         icon=Image.imageFromPath(os.path.join(os.path.dirname(__file__), "etc/images/pass.png")))
         else:
             growl.notify(noteType=FAIL, title="Tests Failed", description="FAIL!!!",
-                         icon=growl.imageFromPath(os.path.join(os.path.dirname(pest.__file__), "etc/images/fail.png")))
+                         icon=Image.imageFromPath(os.path.join(os.path.dirname(__file__), "etc/images/fail.png")))
             
 class Pest(object):
-    def __init__(self, force_initial_run=True, target=None,
-                callback=lambda x: x, exclude_dir=lambda x: False, 
-                exclude_file=lambda x: False):
+    def __init__(self, notifications=[]):
+        self.init_growl(notifications)
         self.snapshot = {}
         self.target = os.path.abspath(os.curdir)
-        if target:
-            self.target = os.path.join(self.target, target)
-        self.callback = callback
-        self.exclude_dir = exclude_dir
-        self.exclude_file = exclude_file
-        if force_initial_run:
-            self._first_run_time = lambda f: 0
-        else:
-            self._first_run_time = os.path.getmtime
 
+    def init_growl(self, notifications):
+        try:
+            self.gn = GrowlNotifier(applicationName='pest', notifications=notifications)
+            self.gn.register()
+        except:
+            self.gn = None
+            
+    def exclude_dir(self):
+        return False
+        
+    def exclude_file(self):
+        return False
+        
     def run(self, default_time):
         changes = self._check_changes(default_time)
         if changes:
-            self.callback(changes)
+            self.run_tests(changes)
 
     def _check_changes(self, default_time):
         changes = []
@@ -79,17 +83,5 @@ class Pest(object):
                                       1.0,                              # latency   
                                       0)                                # flags     
         assert stream, "ERROR: FSEVentStreamCreate() => NULL"
-        self.run(self._first_run_time)
+        self.run(lambda f: 0)
         watch(stream)
-            
-def main():
-    def exclude_dir(name):
-        return name.startswith('.') 
-    def exclude_file(name):
-        return not name.endswith('.py')
-    def dump(changes): 
-        print changes
-    Pest(exclude_dir=exclude_dir, exclude_file=exclude_file,callback=dump).start()
-
-if __name__ == '__main__':
-    main()
