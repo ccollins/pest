@@ -28,9 +28,9 @@ def notify(growl, results):
         else:
             growl.notify(noteType=FAIL, title="Tests Failed", description="FAIL!!!",
                          icon=Image.imageFromPath(os.path.join(os.path.dirname(__file__), "etc/images/fail.png")))
-            
+    
 class Pest(object):
-    def __init__(self, notifications=[]):
+    def __init__(self, notifications=[PASS, FAIL]):
         self.init_growl(notifications)
         self.snapshot = {}
         self.target = os.path.abspath(os.curdir)
@@ -42,11 +42,11 @@ class Pest(object):
         except:
             self.gn = None
             
-    def exclude_dir(self):
-        return False
-        
-    def exclude_file(self):
-        return False
+    def exclude_dir(self, name):
+        return name.startswith('.') 
+
+    def exclude_file(self, name):
+        return not name.endswith('.py') and not name.endswith('.html')
         
     def run(self, default_time):
         changes = self._check_changes(default_time)
