@@ -1,5 +1,17 @@
 #!/usr/bin/env python
-from pest import pest, djest
+import os
+from pest import django_pest, nose_pest, runtests_pest
 
+def find_tester(test_cmd):
+    return os.path.exists(os.path.join(os.path.abspath(os.curdir), test_cmd))
+    
+def make_pest():
+    if find_tester(runtests_pest.CMD):
+        return runtests_pest.RuntestsPest()
+    elif find_tester(django_pest.CMD):
+        return django_pest.DjangoPest()
+    else:
+        return nose_pest.NosePest()
+        
 if __name__ == '__main__':
-    djest.Djest().start()
+    make_pest().start()
