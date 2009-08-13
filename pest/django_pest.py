@@ -4,4 +4,4 @@ CMD = "manage.py"
 
 class DjangoPest(pest.Pest):
     def run_tests(self): 
-        pest.notify(self.gn, os.system("%s/%s test" % (self.root, CMD)))
+        self.notify(self.grade_result(os.system("%s/%s test" % (self.root, CMD))))

@@ -4,4 +4,4 @@ CMD = 'nosetests'
 
 class NosePest(pest.Pest):
     def run_tests(self): 
-        pest.notify(self.gn, os.system(CMD))
+        self.notify(self.grade_result(os.system("%s --where=%s" % (CMD, self.root))))
