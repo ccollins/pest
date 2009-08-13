@@ -1,17 +1,69 @@
 #!/usr/bin/env python
-import os
+import os, sys
+from FSEvents import *
 from pest import django_pest, nose_pest, runtests_pest
 
-def find_tester(test_cmd):
-    return os.path.exists(os.path.join(os.path.abspath(os.curdir), test_cmd))
+def find_tester(path, test_cmd):
+    return os.path.exists(os.path.join(path, test_cmd))
     
-def make_pest():
-    if find_tester(runtests_pest.CMD):
-        return runtests_pest.RuntestsPest()
-    elif find_tester(django_pest.CMD):
-        return django_pest.DjangoPest()
+def gather_pests(path):
+    #is there a src directory?  if not, return a pest for this directory
+    pests = []
+    src_path = os.path.join(path, 'src')
+    if os.path.exists(src_path):
+        #create a pest for each directory in the src
+        src_entries = os.listdir(src_path)
+        for entry in src_entries:
+            entry_path = os.path.join(src_path, entry)
+            if os.path.isdir(entry_path):
+                #if src contains a path of src/dir1/dir1 use that
+                if os.path.exists(os.path.join(entry_path, entry)):
+                    pests.append(make_pest(os.path.join(entry_path, entry)))
+                else:
+                    pests.append(make_pest(entry_path))
     else:
-        return nose_pest.NosePest()
-        
+        pests = [make_pest(path)]
+    return pests
+    
+def make_pest(path):
+    if find_tester(path, runtests_pest.CMD):
+        return runtests_pest.RuntestsPest(root=path)
+    elif find_tester(path, django_pest.CMD):
+        return django_pest.DjangoPest(root=path)
+    else:
+        return nose_pest.NosePest(root=path)
+    
+def analyze_changes(path, pests):
+    for pest in pests:
+        if pest.has_changed():
+            pest.run_tests()
+           
+def watch(stream):
+    FSEventStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)
+    assert FSEventStreamStart(stream), "Failed to start stream"
+    timer = CFRunLoopTimerCreate(kCFAllocatorDefault, CFAbsoluteTimeGetCurrent() + 1.0, 1.0, 0, 
+                                 0, lambda timer, stream: FSEventStreamFlushAsync(stream), stream)
+    CFRunLoopAddTimer(CFRunLoopGetCurrent(), timer, kCFRunLoopDefaultMode)
+    try:
+        CFRunLoopRun()
+    finally:
+        FSEventStreamStop(stream)
+        FSEventStreamInvalidate(stream)
+        FSEventStreamRelease(stream)
+    
+def pester(callback, path, pests):
+    stream = FSEventStreamCreate(kCFAllocatorDefault,               # allocator 
+                                  lambda *x: callback(path, pests), # callback  
+                                  path,                             # my path
+                                  [path],                           # paths to watch
+                                  kFSEventStreamEventIdSinceNow,    # since_when
+                                  1.0,                              # latency   
+                                  0)                                # flags     
+    assert stream, "ERROR: FSEVentStreamCreate() => NULL"
+    callback(path, pests)
+    watch(stream)     
+    
 if __name__ == '__main__':
-    make_pest().start()
+    path = os.path.abspath(os.curdir)
+    pests = gather_pests(path)
+    pester(analyze_changes, path, pests)

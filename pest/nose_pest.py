@@ -3,5 +3,5 @@ import os, pest
 CMD = 'nosetests'
 
 class NosePest(pest.Pest):
-    def run_tests(self, changes): 
+    def run_tests(self): 
         pest.notify(self.gn, os.system(CMD))
