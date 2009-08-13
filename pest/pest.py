@@ -4,23 +4,14 @@ from Growl import Image, GrowlNotifier
 
 PASS = "PASS"
 FAIL = "FAIL"
-PENDING = "PENDING"
-
-def notify(growl, results):
-    if growl:
-        if results == 0:
-            growl.notify(noteType=PASS, title="Tests Passed", description="All tests passed!", 
-                         icon=Image.imageFromPath(os.path.join(os.path.dirname(__file__), "etc/images/pass.png")))
-        else:
-            growl.notify(noteType=FAIL, title="Tests Failed", description="FAIL!!!",
-                         icon=Image.imageFromPath(os.path.join(os.path.dirname(__file__), "etc/images/fail.png")))
     
 class Pest(object):
     def __init__(self, notifications=[PASS, FAIL], root=os.path.abspath(os.curdir)):
         self.init_growl(notifications)
         self.root = root 
         self.last_search_time = 0
-
+        self.name = root.split('/')[-1]
+        
     def init_growl(self, notifications):
         try:
             self.gn = GrowlNotifier(applicationName='pest', notifications=notifications)
@@ -28,6 +19,21 @@ class Pest(object):
         except:
             self.gn = None
             
+    def notify(self, result):
+        if self.gn:
+            if result == PASS:
+                self.gn.notify(noteType=PASS, title="%s: Tests Passed" % self.name.upper(), description="All tests passed!", 
+                             icon=Image.imageFromPath(os.path.join(os.path.dirname(__file__), "etc/images/pass.png")))
+            else:
+                self.gn.notify(noteType=FAIL, title="%s: Tests Failed" % self.name.upper(), description="FAIL!!!",
+                             icon=Image.imageFromPath(os.path.join(os.path.dirname(__file__), "etc/images/fail.png")))
+         
+    def grade_result(self, results):
+        result = FAIL
+        if results == 0:
+            result = PASS
+        return result
+           
     def exclude_dir(self, name):
         return name.startswith('.') 
 
