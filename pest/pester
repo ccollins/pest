@@ -27,7 +27,7 @@ def gather_pests(path):
     
 def make_pest(path):
     if find_tester(path, runtests_pest.CMD):
-        return runtests_pest.RuntestsPest(root=path)
+        return runtests_pest.RunTestsPest(root=path)
     elif find_tester(path, django_pest.CMD):
         return django_pest.DjangoPest(root=path)
     else:
