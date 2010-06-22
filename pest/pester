@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os, sys
 from FSEvents import *
-from pest import django_pest, nose_pest, runtests_pest, custom_pest
+import django_pest, nose_pest, runtests_pest, custom_pest
 
 def find_tester(path, test_cmd):
     return os.path.exists(os.path.join(path, test_cmd))
@@ -30,7 +30,7 @@ def gather_directory_pests(path):
                 else:
                     pests = make_pest(pests, entry_path)
     else:
-        pests = make_pest(pests, entry_path)
+        pests = make_pest(pests, path)
     return pests
     
 def make_custom_pest(path, test_cmd):
@@ -82,5 +82,8 @@ if __name__ == '__main__':
         pests = gather_pests(path, sys.argv[1])
     else:
         pests = gather_pests(path)
-        
-    pester(analyze_changes, path, pests)
+ 
+	if len(pests) > 0:
+		pester(analyze_changes, path, pests)
+	else:
+		print "*** Could not find tests to run, exiting. ***"
