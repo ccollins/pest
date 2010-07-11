@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-setup(name="Pest",
+setup(
+    name="Pest",
     version="1.0",
+    packages = find_packages('pest'),
+    scripts=['pest/pester'],
+    package_data = {'pest': ['images/*.png'],},
+    data_files=[('images', ['pest/images/fail.png', 'pest/images/pass.png', 'pest/images/pending.png'])],
+    install_requires=['pyobjc-framework-FSEvents','growl-py'],
     description="Auto tester for python",
-    packages = ['pest'],
     author="Chuck Collins",
     author_email="chuck.collins@gmail.com",
-    scripts=['pest/pester'],
-    install_requires=['pyobjc-framework-FSEvents','growl-py'],
     url="http://github.com/ccollins/pest",
-    data_files=[('images', ['pest/images/fail.png', 'pest/images/pass.png', 'pest/images/pending.png'])]
 )
