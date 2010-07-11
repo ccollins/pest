@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os, sys
 from FSEvents import *
-from pest import django_pest, nose_pest, runtests_pest, custom_pest
+import django_pest, nose_pest, runtests_pest, custom_pest
 
 def find_tester(path, test_cmd):
     return os.path.exists(os.path.join(path, test_cmd))
@@ -48,14 +48,16 @@ def pester(callback, path, pest):
     callback(path, pest)
     watch(stream)
     
-def get_test_command():
+def get_test_command(test_args):
+    if len(test_args) > 0:
+        return " ".join(test_args)
     return None
     
 if __name__ == '__main__':
     path = os.path.abspath(os.curdir)
-    pest = make_pest(path, get_test_command())
+    pest = make_pest(path, get_test_command(sys.argv[1:]))
    
     if pest:
 		pester(analyze_changes, path, pest)
     else:
-		print "*** Could not find tests to run, exiting. ***"
+		print "Could not find any tests to run, exiting."
