@@ -38,7 +38,7 @@ def watch(stream):
     
 def pester(callback, path, pest):
     stream = FSEventStreamCreate(kCFAllocatorDefault,               # allocator 
-                                  lambda *x: callback(path, pests), # callback  
+                                  lambda *x: callback(path, pest),  # callback  
                                   path,                             # my path
                                   [path],                           # paths to watch
                                   kFSEventStreamEventIdSinceNow,    # since_when
