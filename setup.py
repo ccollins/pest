@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(name="Pest",
     version="1.0",
-    description="Auto tester for python".
+    description="Auto tester for python",
     packages = ['pest'],
     author="Chuck Collins",
     author_email="chuck.collins@gmail.com",
