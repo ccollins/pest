@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup
 setup(
-    name="Pest",
+    name="pest",
     version="1.0",
     packages = ['pest'],
     scripts=['pest/pester'],
