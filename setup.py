@@ -6,7 +6,6 @@ setup(
     packages = ['pest'],
     scripts=['pest/pester'],
     package_data = {'pest': ['images/*.png'],},
-    data_files=[('images', ['pest/images/fail.png', 'pest/images/pass.png', 'pest/images/pending.png'])],
     install_requires=['pyobjc-framework-FSEvents','growl-py'],
     description="Auto tester for python",
     author="Chuck Collins",
