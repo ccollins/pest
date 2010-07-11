@@ -9,6 +9,6 @@ setup(name="Pest",
     author_email="chuck.collins@gmail.com",
     scripts=['pest/pester'],
     install_requires=['pyobjc-framework-FSEvents','growl-py'],
-    url="http://github.com/ccollins/pest"
+    url="http://github.com/ccollins/pest",
     data_files=[('images', ['images/fail.png', 'images/pass.png', 'images/pending.png'])]
 )
