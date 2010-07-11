@@ -23,13 +23,13 @@ class Pest(object):
         if self.gn:
             if result == PASS:
                 self.gn.notify(noteType=PASS, title="%s: Tests Passed" % self.name.upper(), description="All tests passed!", 
-                             icon=Image.imageFromPath(os.path.join(os.path.dirname(__file__), "etc/images/pass.png")))
+                             icon=Image.imageFromPath(os.path.join(os.path.dirname(__file__), "/images/pass.png")))
             elif result == FAIL:
                 self.gn.notify(noteType=FAIL, title="%s: Tests Failed" % self.name.upper(), description="FAIL!!!",
-                             icon=Image.imageFromPath(os.path.join(os.path.dirname(__file__), "etc/images/fail.png")))
+                             icon=Image.imageFromPath(os.path.join(os.path.dirname(__file__), "/images/fail.png")))
             else:
                 self.gn.notify(noteType=PASS, title="%s: Running Tests" % self.name.upper(), description="Running tests...", 
-                             icon=Image.imageFromPath(os.path.join(os.path.dirname(__file__), "etc/images/pending.png")))
+                             icon=Image.imageFromPath(os.path.join(os.path.dirname(__file__), "/images/pending.png")))
     def grade_result(self, results):
         result = FAIL
         if results == 0:

@@ -1,7 +1,3 @@
-Pip dev installation:
-pip install -E pest -e git://github.com/ccollins/pest.git#egg=Pest
-pip install -E pest -r pest/src/pest/requirements.txt
-
 Run 'pester' in the directory that you want to watch for changes.
 
 Pest will look for a custom 'runtests' script, then a django 'manage.py' script, then will assume the nosetest runner.  You can manage more then one directory as well.  If no test runners are found, pest will look for a test runner under each directory in 'src' if it is found.  For a directory under 'src', say 'dir1', pest will look for a test runner in 'src/dir1/dir1', then in 'src/dir1'.
