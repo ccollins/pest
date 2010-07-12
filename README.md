@@ -1,3 +1,13 @@
-Run 'pester' in the directory that you want to watch for changes.
+What is pest?
+==============
+Pest was created to give you the shortest feedback loop possible in your unit testing (much like autotest or autospec). 
 
-Pest will look for a custom 'runtests' script, then a django 'manage.py' script, then will assume the nosetest runner.  You can manage more then one directory as well.  If no test runners are found, pest will look for a test runner under each directory in 'src' if it is found.  For a directory under 'src', say 'dir1', pest will look for a test runner in 'src/dir1/dir1', then in 'src/dir1'.
+Using pest
+==========
+Pester will execute a command anytime a file changes in a directory below it.  In a django project for instance, run pester at the topmost level (where manage.py is), and your tests will execute everytime a .py file changes in the project.
+
+  $>pester
+
+Pest will search its current path for an executable runtests script (this script can be anything, just make sure you want it ran each time a file is changed) and then a django manage.py script.  Pest also takes arguments to execute instead of runtests or manage.py.  If I wanted to execute only a certain django app's test suite, then I could run
+
+  $>pester python manage.py test myapp

@@ -9,6 +9,7 @@ setup(
     scripts=['pest/pester'],
     install_requires=['pyobjc-framework-FSEvents','growl-py'],
     description="Auto tester for python",
+    license = "MIT",
     author="Chuck Collins",
     author_email="chuck.collins@gmail.com",
     url="http://github.com/ccollins/pest",
