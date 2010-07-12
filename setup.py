@@ -2,7 +2,9 @@
 from setuptools import setup
 setup(
     name="pest",
-    version="1.0.1",
+    version="1.0.2",
+    include_package_data=True,
+    package_data = {'images':['*.*']},
     packages=['pest'],
     scripts=['pest/pester'],
     install_requires=['pyobjc-framework-FSEvents','growl-py'],
