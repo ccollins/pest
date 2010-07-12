@@ -8,4 +8,4 @@ class CustomPest(pest.Pest):
         
     def run_tests(self): 
         super(CustomPest, self).run_tests()
-        self.notify(self.grade_result(os.system("%s/%s" % (self.root, self.cmd))))
+        self.notify(self.grade_result(os.system(self.cmd)))
