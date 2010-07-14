@@ -2,7 +2,7 @@
 from setuptools import setup
 setup(
     name="pest",
-    version="1.0.2",
+    version="1.0.3",
     include_package_data=True,
     package_data = {'images':['*.*']},
     packages=['pest'],

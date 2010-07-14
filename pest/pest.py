@@ -40,7 +40,7 @@ class Pest(object):
         return name.startswith('.') 
 
     def exclude_file(self, name):
-        return not name.endswith('.py') and not name.endswith('.html')
+        return (not name.endswith('.py') and not name.endswith('.html')) or name.startswith('.')
         
     def run_tests(self):
         self.notify('RUN') 
